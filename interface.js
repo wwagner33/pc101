@@ -31,12 +31,29 @@ function updateMachineCodeView() {
     const machineCodeDiv = document.getElementById("machineCode");
     machineCodeDiv.innerHTML = ""; // Limpa o conteúdo
 
+    const format = document.getElementById("codeFormat").value;
+
     for (let i = 0; i < memory.length; i++) {
         if (memory[i] !== 0) {
             const line = document.createElement("div");
-            line.textContent = `Memória[${i}]: ${memory[i]}`;
+            const addressStr = formatValue(i, format);
+            const valueStr = formatValue(memory[i], format, 8);
+            line.textContent = `Memória[${addressStr}]: ${valueStr}`;
             machineCodeDiv.appendChild(line);
         }
+    }
+}
+
+// Função para formatar valores de acordo com o formato selecionado
+function formatValue(value, format, bitLength = 8) {
+    switch (format) {
+        case "binary":
+            return value.toString(2).padStart(bitLength, '0');
+        case "hexadecimal":
+            return '0x' + value.toString(16).toUpperCase().padStart(Math.ceil(bitLength / 4), '0');
+        case "decimal":
+        default:
+            return value.toString(10);
     }
 }
 
@@ -193,16 +210,18 @@ window.onload = function() {
 
 // Função para atualizar a visualização dos registradores
 function updateRegistersView() {
-    document.getElementById("regA").innerText = A;
-    document.getElementById("regB").innerText = B;
-    document.getElementById("regC").innerText = C;
-    document.getElementById("regIP").innerText = IP;
+    const format = document.getElementById("codeFormat").value;
+    document.getElementById("regA").innerText = formatValue(A, format, 8);
+    document.getElementById("regB").innerText = formatValue(B, format, 8);
+    document.getElementById("regC").innerText = formatValue(C, format, 8);
+    document.getElementById("regIP").innerText = formatValue(IP, format, 8);
 }
 
 // Função para atualizar a visualização dos barramentos
 function updateBusesView() {
-    document.getElementById("addressBus").innerText = IP;
-    document.getElementById("dataBus").innerText = dataBus;
+    const format = document.getElementById("codeFormat").value;
+    document.getElementById("addressBus").innerText = formatValue(IP, format, 8);
+    document.getElementById("dataBus").innerText = formatValue(dataBus, format, 8);
 }
 
 // Função para atualizar a visualização da memória
@@ -210,15 +229,17 @@ function updateMemoryView() {
     const memoryTableBody = document.querySelector("#memoryTable tbody");
     memoryTableBody.innerHTML = ""; // Limpa a tabela
 
+    const format = document.getElementById("codeFormat").value;
+
     for (let i = 0; i < memory.length; i++) {
         const row = document.createElement("tr");
 
         const addrCell = document.createElement("td");
-        addrCell.innerText = i;
+        addrCell.innerText = formatValue(i, format, 8);
         row.appendChild(addrCell);
 
         const valueCell = document.createElement("td");
-        valueCell.innerText = memory[i];
+        valueCell.innerText = formatValue(memory[i], format, 8);
         row.appendChild(valueCell);
 
         // Destaca a área de código e dados
