@@ -1,0 +1,15 @@
+/* Programa: Soma de 2 com 10 */
+
+/* Carrega 2 no registrador A */
+LOAD 2;
+
+/* Adiciona 10 ao registrador A */
+ADD 10;
+
+/* Armazena o resultado em B */
+STORE B;
+
+/* Exibe o resultado */
+OUT;
+
+/* Fim do programa */

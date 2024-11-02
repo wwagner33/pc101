@@ -1,0 +1,33 @@
+@startuml AssemblerStateMachine
+
+    title Máquina de Estados do Montador (Assembler)
+
+    [*] --> Idle : Início
+
+    state Idle {
+        Idle : Aguardando código fonte
+    }
+
+    Idle --> ValidateSyntax : Receber e Validar Sintaxe
+    ValidateSyntax : Verifica erros de sintaxe no código A101
+
+    ValidateSyntax --> ValidateInstructions : Validar Instruções
+    ValidateInstructions : Verifica se as instruções são conhecidas
+
+    state ErrorState {
+        Error : Exibe mensagens de erro
+    }
+
+    ValidateSyntax --> ErrorState : Erro de Sintaxe
+    ValidateInstructions --> ErrorState : Instrução Desconhecida
+
+    ErrorState --> [*] : Abortar Montagem
+
+    ValidateInstructions --> GenerateBinary : Gerar Código Binário
+    GenerateBinary : Traduz código A101 para binário
+
+    GenerateBinary --> AssemblyComplete : Montagem Completa
+
+    AssemblyComplete --> [*] : Pronto para Execução
+
+@enduml

@@ -1,0 +1,33 @@
+@startuml CPUStateMachine
+
+    title Máquina de Estados do Processador (CPU)
+
+    [*] --> Idle : Início
+
+    state Idle {
+        Idle : Aguardando programa montado
+    }
+
+    Idle --> LoadToMemory : Carregar na Memória
+    LoadToMemory : Carrega código binário para execução
+
+    LoadToMemory --> Ready : Pronto para Execução
+
+    Ready --> StepExecution : Modo Passo a Passo
+    Ready --> RunProgram : Modo Execução Completa
+
+    state StepExecution {
+        [*] --> WaitForUser : Aguardando ação do usuário
+        WaitForUser --> ExecuteStep : Executar Próxima Instrução / [Avançar]
+        ExecuteStep --> WaitForUser
+        WaitForUser --> [*] : Parar Execução / [Parar]
+    }
+
+    RunProgram : Executa o programa até o fim ou interrupção
+
+    RunProgram --> Stop : Fim da Execução ou Erro
+    Stop : Exibe resultados ou erros
+
+    Stop --> Idle : Resetar/Reiniciar
+
+@enduml
