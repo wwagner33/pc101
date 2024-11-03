@@ -1,5 +1,8 @@
 // Arquivo: interface.js
 
+// Acessando o OPCODES exposto pelo pc101.js
+const OPCODES = window.OPCODES;
+
 // Variável para controlar o modo de execução passo a passo
 let stepMode = false;
 
@@ -109,29 +112,23 @@ function executeNextInstruction() {
     const opcode = memory[IP];
     const operand = memory[IP + 1];
 
-    let instructionFound = false;
+    if (Object.values(OPCODES).includes(opcode)) {
+        executeOpcode(opcode, operand);
 
-    for (const [key, value] of Object.entries(opCodes)) {
-        if (parseInt(value, 2) === opcode) {
-            instructionFound = true;
-            executeInstruction(key, operand);
-            // Ajusta o IP com base na instrução
-            if (['LOAD', 'ADD', 'SUB', 'STORE', 'INC', 'DEC'].includes(key)) {
-                IP += 2;
-            } else if (['JMP', 'JZ'].includes(key)) {
-                // O IP já foi ajustado dentro da instrução
-            } else if (['IN', 'OUT'].includes(key)) {
-                IP += 1;
-            } else {
-                IP += 1;
-            }
-            break;
+        // Ajusta o IP com base na instrução
+        if ([OPCODES.LOAD, OPCODES.ADD, OPCODES.SUB, OPCODES.STORE, OPCODES.INC, OPCODES.DEC].includes(opcode)) {
+            IP += 2;
+        } else if (opcode === OPCODES.JMP || opcode === OPCODES.JZ) {
+            // O IP já foi ajustado dentro da instrução
+        } else if (opcode === OPCODES.IN || opcode === OPCODES.OUT) {
+            IP += 1;
+        } else {
+            IP += 1;
         }
-    }
-
-    if (!instructionFound) {
-        logMessage(`Erro na execução: Instrução desconhecida no endereço ${IP}, valor: ${opcode}`);
+    } else {
+        logMessage(`Erro na execução: Opcode desconhecido no endereço ${IP}, valor: ${opcode}`);
         stepMode = false;
+        IP += 1; // Avança o IP para evitar loop infinito
     }
 
     // Verifica se o IP excedeu o limite de memória de código
@@ -227,6 +224,7 @@ function updateBusesView() {
 // Função para atualizar a visualização da memória
 function updateMemoryView() {
     const memoryTableBody = document.querySelector("#memoryTable tbody");
+    if (!memoryTableBody) return; // Evita erro se o elemento não existir
     memoryTableBody.innerHTML = ""; // Limpa a tabela
 
     const format = document.getElementById("codeFormat").value;
@@ -325,25 +323,25 @@ function executeProgram() {
 }
 
 // Chama a atualização dos barramentos ao executar instruções que envolvem I/O
-const originalExecuteInstruction = executeInstruction;
-executeInstruction = function(instruction, operand) {
-    originalExecuteInstruction.apply(this, arguments);
+const originalExecuteOpcode = executeOpcode;
+executeOpcode = function(opcode, operand) {
+    originalExecuteOpcode(opcode, operand);
     updateRegistersView();
     updateBusesView();
-    highlightActiveElements(instruction);
+    highlightActiveElements(opcode);
 };
 
 // Função para destacar elementos ativos durante a execução
-function highlightActiveElements(instruction) {
+function highlightActiveElements(opcode) {
     // Limpa destaques anteriores
     document.querySelectorAll(".highlight").forEach(el => el.classList.remove("highlight"));
 
     // Destaca registradores e barramentos usados
-    if (['LOAD', 'ADD', 'SUB', 'STORE', 'INC', 'DEC'].includes(instruction)) {
+    if ([OPCODES.LOAD, OPCODES.ADD, OPCODES.SUB, OPCODES.STORE, OPCODES.INC, OPCODES.DEC].includes(opcode)) {
         document.getElementById("regA").parentElement.classList.add("highlight");
     }
 
-    if (['IN', 'OUT'].includes(instruction)) {
+    if (opcode === OPCODES.IN || opcode === OPCODES.OUT) {
         document.getElementById("dataBus").parentElement.classList.add("highlight");
     }
 
