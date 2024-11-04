@@ -79,7 +79,8 @@ O PC101 é um simulador que emula o funcionamento de um computador básico de 8 
 - [ ] Integrar um editor de código que mostre a numeração das linhas;
 - [ ] Carregar exemplos já prontos de códigos em A101 para o ambiente de edição de código;
 - [ ] Criar uma barra de progresso para fluxo de simulação conforme pode ser visto abaixo:
-> [!Fluxo de Procesamento]
+
+> [!Note]  
 > **(1)** `Carga do Código Fonte` =>  
 **(2)** `Montagem do Código de Máquina` =>  
 **(3)** `Carga do Programa na Memória Principal (Program Loading)` =>  
