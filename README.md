@@ -12,7 +12,7 @@ O PC101 é um simulador que emula o funcionamento de um computador básico de 8 
 
 ---
 
-## Funcionalidades
+## Funcionalidades Implementadas
 
 1. **Registradores e Memória:**
    - **Registradores:**
@@ -69,9 +69,24 @@ O PC101 é um simulador que emula o funcionamento de um computador básico de 8 
      - **Console de Log:** Exibe mensagens e logs durante a montagem e execução.
      - **Display e Teclado:** Permitem interação com o programa através de I/O.
 
----
 
-## Como Utilizar o Simulador
+## Funcionalidades para Implementar
+
+- [ ] Carregar arquivo na linguagem A101 com extensão `.a101`;
+- [ ] Separar o código do Montador A101 do simulador;
+- [ ] Mostrar somente as regiões de memória utilizadas pelo programa na interface gráfica do siimulador.
+- [ ] Melhorar o layout da interface gráfica dosimulador;
+- [ ] Integrar um editor de código que mostre a numeração das linhas;
+- [ ] Carregar exemplos já prontos de códigos em A101 para o ambiente de edição de código;
+- [ ] Criar uma barra de progresso para fluxo de simulação conforme pode ser visto abaixo:
+
+> **(1)** `Carga do Código Fonte` => 
+**(2)** `Montagem do Código de Máquina` => 
+**(3)** `Carga do Programa na Memória Principal (Program Loading)` =>  
+**(4)** `Execução do Código` => 
+**(5)** `Parada da Execução`
+
+- [ ] Relacionar o teclado virtual do simulador ao teclado numérico físico;
 
 1. **Escrever o Código A101:**
    - Utilize o editor de código para escrever programas na linguagem Assembly101.
