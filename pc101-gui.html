@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulador PC101</title>
+    <link rel="stylesheet" href="pc101-gui.css">
+</head>
+<body>
+
+    <!-- Área de Montagem do Código -->
+    <div class="section" id="assemblySection">
+        <h2>Área de Montagem do Código</h2>
+        <div id="assemblyArea">
+            <!-- Editor de Código A101 -->
+            <textarea id="codeInput" placeholder="Insira o código A101 aqui..."></textarea>
+
+            <!-- Código de Máquina -->
+            <div>
+                <div id="machineCode">
+                    <!-- O código de máquina será exibido aqui -->
+                </div>
+                <!-- Selecionar Formato de Exibição -->
+                <div id="formatSelector">
+                    <label for="codeFormat">Formato: </label>
+                    <select id="codeFormat">
+                        <option value="binary" selected>Binário</option>
+                        <option value="decimal">Decimal</option>
+                        <option value="hexadecimal">Hexadecimal</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div id="assemblyControls">
+            <button id="assembleButton">Montar Código</button>
+            <button id="loadButton" disabled>Carregar Programa</button>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Área de Execução do Programa -->
+    <div class="section" id="executionSection">
+        <h2>Área de Execução do Programa</h2>
+        <!-- Controles de Execução -->
+        <div id="executionControls">
+            <button id="stepButton">Executar Instrução</button>
+            <button id="runButton">Executar Programa</button>
+            <button id="resetButton">Resetar</button>
+        </div>
+
+        <div id="executionArea">
+            <!-- Visualização da Memória -->
+            <div id="memoryView">
+                <h3>Memória Principal</h3>
+                <table id="memoryTable">
+                    <thead>
+                        <tr>
+                            <th>Endereço</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Linhas da memória serão inseridas aqui -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Registradores, Barramentos e Dispositivos de I/O -->
+            <div id="ioDevices">
+                <!-- Registradores -->
+                <div id="registers">
+                    <h3>Registradores</h3>
+                    <table>
+                        <tr>
+                            <th>Registrador</th>
+                            <th>Valor</th>
+                        </tr>
+                        <tr>
+                            <td>A</td>
+                            <td id="regA">0</td>
+                        </tr>
+                        <tr>
+                            <td>B</td>
+                            <td id="regB">0</td>
+                        </tr>
+                        <tr>
+                            <td>C</td>
+                            <td id="regC">0</td>
+                        </tr>
+                        <tr>
+                            <td>IP</td>
+                            <td id="regIP">0</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Barramentos -->
+                <div id="buses">
+                    <h3>Barramentos</h3>
+                    <table>
+                        <tr>
+                            <th>Barramento</th>
+                            <th>Valor</th>
+                        </tr>
+                        <tr>
+                            <td>Address Bus</td>
+                            <td id="addressBus">0</td>
+                        </tr>
+                        <tr>
+                            <td>Data Bus</td>
+                            <td id="dataBus">0</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Dispositivos de Entrada/Saída -->
+                <h3>Dispositivos de Entrada/Saída</h3>
+                <div id="display">0</div>
+                <div class="keyboard">
+                    <div class="key" data-key="1">1</div>
+                    <div class="key" data-key="2">2</div>
+                    <div class="key" data-key="3">3</div>
+                    <div class="key" data-key="4">4</div>
+                    <div class="key" data-key="5">5</div>
+                    <div class="key" data-key="6">6</div>
+                    <div class="key" data-key="7">7</div>
+                    <div class="key" data-key="8">8</div>
+                    <div class="key" data-key="9">9</div>
+                    <div class="key" data-key="0">0</div>
+                    <div class="key" id="clearKey">C</div>
+                    <div class="key" id="enterKey">Enter</div>
+                </div>
+            </div>
+        </div>
+        <!-- Console de Log -->
+        <div class="section">
+            <h2>Console de Log</h2>
+            <div id="logConsole"></div>
+        </div>
+    </div>
+
+    <!-- Inclusão dos scripts -->
+    <script type="module" src="pc101-gui.js"></script>
+</body>
+</html>

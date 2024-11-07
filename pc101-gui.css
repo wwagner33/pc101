@@ -1,0 +1,205 @@
+/* Arquivo: pc101-gui.css */
+
+/* Estilos Gerais */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+/* Seções principais */
+.section {
+    margin-bottom: 30px;
+}
+
+/* Estilos para a área de montagem */
+#assemblyArea {
+    display: flex;
+    gap: 20px;
+}
+
+#codeInput {
+    width: 50%;
+    height: 300px;
+    font-size: 12px;
+    padding: 10px;
+    overflow-y: scroll;
+}
+
+#machineCode {
+    width: 100%;
+    height: 300px;
+    font-size: 12px;
+    background-color: #d2f7a1;
+    padding: 10px;
+    overflow-y: scroll;
+}
+
+#assemblyControls {
+    margin-top: 10px;
+}
+
+#assemblyControls button {
+    font-size: 12px;
+    padding: 10px;
+    margin-right: 5px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+/* Estilos para a seleção de formato */
+#formatSelector {
+    margin-top: 10px;
+}
+
+#formatSelector label {
+    font-size: 12px;
+    margin-right: 5px;
+}
+
+#formatSelector select {
+    font-size: 12px;
+    padding: 5px;
+}
+
+/* Estilos para a área de execução */
+#executionArea {
+    display: flex;
+    gap: 20px;
+}
+
+/* Estilos para visualização da memória */
+#memoryView {
+    flex: 1;
+}
+
+#memoryView table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#memoryView tbody {
+    overflow-y: scroll;
+    height: 400px;
+}
+
+#memoryView th,
+#memoryView td {
+    border: 1px solid #ccc;
+    padding: 5px;
+    text-align: center;
+    font-size: 11px;
+}
+
+/* Destaque da instrução atual */
+.current-instruction {
+    background-color: #ffeb3b !important;
+}
+
+/* Estilos para registradores e barramentos */
+#registers,
+#buses {
+    margin-bottom: 20px;
+}
+
+#registers table,
+#buses table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#registers th,
+#registers td,
+#buses th,
+#buses td {
+    border: 1px solid #ccc;
+    padding: 5px;
+    text-align: center;
+}
+
+/* Estilos para dispositivos de I/O */
+#ioDevices {
+    flex: 1;
+}
+
+#display {
+    font-size: 24px;
+    border: 1px solid #333;
+    width: 60%;
+    height: 50px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.keyboard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    width: 60%;
+    margin-bottom: 20px;
+}
+
+.key {
+    font-size: 20px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid #333;
+    background-color: #f0f0f0;
+}
+
+.key:hover {
+    background-color: #ddd;
+}
+
+/* Estilos para o console de log */
+#logConsole {
+    width: 100%;
+    height: 150px;
+    border: 1px solid #333;
+    overflow-y: scroll;
+    background-color: #f9f9f9;
+    padding: 5px;
+    font-family: monospace;
+    font-size: 14px;
+}
+
+#logConsole p {
+    margin: 0;
+}
+
+/* Botões de execução */
+#executionControls {
+    margin-top: 10px;
+}
+
+#executionControls button {
+    font-size: 12px;
+    padding: 10px;
+    margin-right: 5px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+/* Destaque de elementos em uso */
+.highlight {
+    background-color: #ffeb3b;
+}
+
+/* Estilos para áreas específicas da memória */
+#memoryView tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#memoryView tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+/* Estilos para áreas de código e dados na memória */
+#memoryView tr.code-area {
+    background-color: #e0f7fa;
+}
+
+#memoryView tr.data-area {
+    background-color: #f1f8e9;
+}
+
