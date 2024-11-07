@@ -8,7 +8,7 @@ Bem-vindo ao **Simulador PC101**, um simulador educacional de um computador digi
 
 ## Descrição do Projeto
 
-O PC101 é um simulador que emula o funcionamento de um computador básico de 8 bits. Ele permite que os usuários escrevam programas em uma linguagem assembly simplificada chamada **Assembly101 (A101)**, montem o código e executem no simulador. A interface gráfica facilita a visualização dos componentes do computador, como registradores, memória e barramentos, e permite acompanhar a execução do programa passo a passo.
+O PC101 é um simulador que emula o funcionamento de um computador básico de 8 bits. Ele permite que os usuários escrevam programas em uma linguagem de programação simplificada chamada **A101**, montem o código e executem no simulador. A interface gráfica facilita a visualização dos componentes do computador, como registradores, memória e barramentos, e permite acompanhar a execução do programa passo a passo.
 
 ---
 
@@ -49,7 +49,7 @@ O PC101 é um simulador que emula o funcionamento de um computador básico de 8 
      - `STORE`: Armazena o valor do acumulador `A` em um registrador ou na memória.
 
 5. **Processo de Programação e Execução:**
-   - **Assembly101 (A101):** Linguagem assembly simplificada para programação do PC101.
+   - **A101:** Linguagem programação simplificada para programação do PC101.
    - **Montador:** Traduz o código A101 em código de máquina e carrega na memória.
    - **Execução:**
      - Modo de execução completa ou passo a passo.
@@ -80,16 +80,17 @@ O PC101 é um simulador que emula o funcionamento de um computador básico de 8 
 - [ ] Carregar exemplos já prontos de códigos em A101 para o ambiente de edição de código;
 - [ ] Criar uma barra de progresso para fluxo de simulação conforme pode ser visto abaixo:
 
-> **(1)** `Carga do Código Fonte` => 
-**(2)** `Montagem do Código de Máquina` => 
+> [!Note]  
+> **(1)** `Carga do Código Fonte` =>  
+**(2)** `Montagem do Código de Máquina` =>  
 **(3)** `Carga do Programa na Memória Principal (Program Loading)` =>  
-**(4)** `Execução do Código` => 
+**(4)** `Execução do Código` =>  
 **(5)** `Parada da Execução`
 
 - [ ] Relacionar o teclado virtual do simulador ao teclado numérico físico;
 
 1. **Escrever o Código A101:**
-   - Utilize o editor de código para escrever programas na linguagem Assembly101.
+   - Utilize o editor de código para escrever programas na linguagem A101.
    - Exemplo simples de programa:
 
      ```assembly
@@ -130,7 +131,7 @@ O PC101 é um simulador que emula o funcionamento de um computador básico de 8 
 - **pc101.js:** Implementação do processador, memória, barramentos e conjunto de instruções.
 - **interface.js:** Lida com a interface gráfica, eventos do usuário e interação com o `pc101.js`.
 - **pc101.html:** Arquivo HTML que compõe a interface gráfica do simulador.
-- **teste.a101:** Exemplo de programa escrito em Assembly101 para testes.
+- **teste.a101:** Exemplo de programa escrito em A101 para testes.
 
 ---
 
@@ -143,7 +144,7 @@ O PC101 é um simulador que emula o funcionamento de um computador básico de 8 
 
 ## Observações Adicionais
 
-- **Objetivo Educacional:** Este simulador foi desenvolvido com fins educacionais para auxiliar no aprendizado de arquitetura de computadores e programação em assembly.
+- **Objetivo Educacional:** Este simulador foi desenvolvido com fins educacionais para auxiliar no aprendizado de arquitetura de computadores e programação.
 - **Extensibilidade:** O código foi estruturado de forma modular para facilitar futuras extensões ou modificações, como a adição de novas instruções ou periféricos.
 - **Feedback e Contribuições:** Feedbacks são bem-vindos. Se você deseja contribuir para o projeto, sinta-se à vontade para entrar em contato.
 
