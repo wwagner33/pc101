@@ -1,0 +1,41 @@
+//Teste 01
+A: 5
+B: 10
+C: 0
+
+//Teste 2
+
+LOAD A
+ADD B
+STORE C
+JMP LOOP
+
+A: 5
+B: 10
+C: 0
+
+LOOP:
+DEC A
+JZ END
+JMP LOOP
+
+END:
+OUT
+
+//Teste 03
+LOAD A
+ADD B
+STORE C
+JMP LOOP
+
+A: 5
+B: 10
+C: 0
+
+LOOP:
+DEC A
+JZ END
+JMP LOOP
+
+END:
+OUT
