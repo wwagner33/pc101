@@ -1,13 +1,16 @@
 // Arquivo: pc101.js
 
+// Importação dos OpCodes do montador
+import { OPCODES } from './a101.js';
+
 // Memória principal (100 posições de 8 bits)
-const memory = Array(100).fill(0);
+export const memory = Array(100).fill(0);
 
 // Definição dos limites de memória
-const CODE_MEMORY_LIMIT = 70; // Limite para a memória de código (0 a 69)
-const DATA_MEMORY_START = 70; // Início da memória de dados (70 a 99)
+export const CODE_MEMORY_LIMIT = 70; // Limite para a memória de código (0 a 69)
+export const DATA_MEMORY_START = 70; // Início da memória de dados (70 a 99)
 
-// Registradores
+// Registradores (variáveis internas)
 let A = 0; // Acumulador
 let B = 0; // Registrador B
 let C = 0; // Registrador C
@@ -17,303 +20,62 @@ let IP = 0; // Instruction Pointer
 let dataBus = 0; // Dado sendo transferido
 
 // Barramento de Controle
-let controlBus = {
+const controlBus = {
     read: false, // Habilita leitura
     write: false, // Habilita escrita
-    io: false, // Habilita acesso I/O
+    io: false,    // Habilita acesso I/O
 };
 
 // Sinais de Interrupção
-window.IRQ1 = false; // Interrupção do teclado
-window.IRQ2 = false; // Interrupção do display
+let IRQ1 = false; // Interrupção do teclado
+let IRQ2 = false; // Interrupção do display
 
-// Definição dos OpCodes como constantes numéricas
-const OPCODE_LOAD = parseInt("0001", 2); // 1
-const OPCODE_ADD = parseInt("0010", 2); // 2
-const OPCODE_SUB = parseInt("0011", 2); // 3
-const OPCODE_STORE = parseInt("0100", 2); // 4
-const OPCODE_JMP = parseInt("0101", 2); // 5
-const OPCODE_JZ = parseInt("0110", 2); // 6
-const OPCODE_IN = parseInt("0111", 2); // 7
-const OPCODE_OUT = parseInt("1000", 2); // 8
-const OPCODE_INC = parseInt("1001", 2); // 9
-const OPCODE_DEC = parseInt("1010", 2); // 10
+// Variável para armazenar o opcode atual (para a interface gráfica)
+let currentOpcode = null;
 
 // Mapeamento dos códigos dos registradores
 const REGISTER_CODES = {
     'A': -1,
     'B': -2,
-    'C': -3
+    'C': -3,
 };
 
-// Função para remover comentários do código A101
-function removeComments(program) {
-    // Remove comentários delimitados por /* e */
-    program = program.replace(/\/\*[\s\S]*?\*\//g, '');
-    // Remove comentários de linha únicos iniciados por // ou \
-    program = program.replace(/\/\/.*$/gm, '');
-    program = program.replace(/\\.*$/gm, '');
-    return program;
+// Funções de Callback para Logs e Atualização de Display
+let logCallback = null;
+let updateDisplayCallback = null;
+
+// Função para definir o callback de log
+export function setLogCallback(callback) {
+    logCallback = callback;
 }
 
-// Função para montar o código A101 e carregar na memória
-function assembleAndLoad(program) {
-    // Remove comentários do código
-    const cleanedProgram = removeComments(program);
+// Função para definir o callback de atualização do display
+export function setUpdateDisplayCallback(callback) {
+    updateDisplayCallback = callback;
+}
 
-    const lines = cleanedProgram.split('\n');
-    let address = 0;
-    let hasError = false; // Flag para indicar se houve erros durante a montagem
-    let errorMessages = []; // Array para armazenar mensagens de erro
-    const labels = {}; // Dicionário de labels
-    const unresolvedJumps = []; // Lista de saltos a resolver
-    let dataAddress = DATA_MEMORY_START; // Ponteiro para alocação de dados
+// Função auxiliar para log
+function log(message) {
+    if (logCallback) {
+        logCallback(message);
+    } else {
+        console.log(message);
+    }
+}
 
+// Função para carregar o código de máquina na memória
+export function loadMachineCode(machineCode) {
     // Limpa a memória antes de carregar um novo programa
     memory.fill(0);
-
-    // Primeira passagem: Identificar labels e variáveis, e verificar tamanho do código
-    for (let index = 0; index < lines.length; index++) {
-        let line = lines[index];
-        const lineNumber = index + 1;
-
-        // Remove espaços extras
-        let cleanLine = line.trim();
-
-        // Ignora linhas vazias
-        if (cleanLine === "") continue;
-
-        // Verifica se a linha contém um label
-        if (cleanLine.includes(':')) {
-            const [label, rest] = cleanLine.split(':');
-            const labelName = label.trim();
-            const instructionLine = rest.trim();
-
-            if (instructionLine === "") {
-                // Label sem instrução na mesma linha
-                // Assumimos que labels sem instruções são variáveis
-                labels[labelName] = dataAddress;
-                dataAddress++;
-
-                // Verifica se a memória de dados excede o limite
-                if (dataAddress >= memory.length) {
-                    hasError = true;
-                    errorMessages.push("Erro: Estouro de Memória de Dados. Não há espaço suficiente para armazenar os dados.");
-                    break;
-                }
-
-                continue; // Processa a próxima linha
-            } else {
-                // Label com instrução na mesma linha
-                labels[labelName] = address; // Marca o endereço atual para o label
-                cleanLine = instructionLine; // Processa a instrução após o label
-            }
-        }
-
-        // Verifica se é uma declaração de variável
-        if (cleanLine.includes(';')) {
-            // Remove o ";" do final da instrução
-            cleanLine = cleanLine.slice(0, -1).trim();
-        }
-
-        // Ignora linhas que ficaram vazias após o processamento
-        if (cleanLine === "") continue;
-
-        // Calcula o tamanho da instrução
-        const instructionSize = processInstruction(cleanLine, address, lineNumber, true);
-        address += instructionSize;
-
-        // Verifica se o código excede o limite de memória
-        if (address > CODE_MEMORY_LIMIT) {
-            hasError = true;
-            errorMessages.push("Erro: Estouro de Memória de Código. O programa excede o limite de memória disponível.");
-            break;
-        }
+    // Carrega o código de máquina na memória
+    for (let i = 0; i < machineCode.length; i++) {
+        memory[i] = machineCode[i];
     }
-
-    // Segunda passagem: Montar o código e resolver labels
-    if (!hasError) {
-        address = 0; // Reinicia o endereço para montar o código
-        dataAddress = DATA_MEMORY_START; // Reinicia o endereço de dados para inicialização
-
-        for (let index = 0; index < lines.length; index++) {
-            let line = lines[index];
-            const lineNumber = index + 1;
-
-            // Remove espaços extras
-            let cleanLine = line.trim();
-
-            // Ignora linhas vazias
-            if (cleanLine === "") continue;
-
-            // Verifica se a linha contém um label
-            if (cleanLine.includes(':')) {
-                const [label, rest] = cleanLine.split(':');
-                const labelName = label.trim();
-                const instructionLine = rest.trim();
-
-                if (instructionLine === "") {
-                    // Variável sem valor inicial (já tratada na primeira passagem)
-                    continue;
-                } else if (!isNaN(parseInt(instructionLine, 10))) {
-                    // Variável com valor inicial
-                    let value = parseInt(instructionLine, 10);
-                    memory[labels[labelName]] = value;
-                    continue;
-                } else {
-                    // Label de código com instrução na mesma linha
-                    cleanLine = instructionLine;
-                }
-            }
-
-            // Verifica se é uma declaração de variável
-            if (cleanLine.includes(';')) {
-                // Remove o ";" do final da instrução
-                cleanLine = cleanLine.slice(0, -1).trim();
-            }
-
-            // Ignora linhas que ficaram vazias após o processamento
-            if (cleanLine === "") continue;
-
-            const instructionSize = processInstruction(cleanLine, address, lineNumber, false, labels, unresolvedJumps, errorMessages);
-            address += instructionSize;
-        }
-
-        // Resolver os saltos que estavam pendentes
-        unresolvedJumps.forEach(jump => {
-            const { address, operandLabel, lineNumber } = jump;
-            if (labels.hasOwnProperty(operandLabel)) {
-                memory[address + 1] = labels[operandLabel];
-            } else {
-                hasError = true;
-                errorMessages.push(`Erro na linha ${lineNumber}: Label desconhecido "${operandLabel}".`);
-            }
-        });
-    }
-
-    if (hasError) {
-        // Exibe as mensagens de erro e não prossegue com a execução
-        errorMessages.forEach(msg => console.error(msg));
-        return false; // Indica que a montagem falhou
-    } else {
-        console.log("Programa carregado na memória:", memory.slice(0, address));
-        console.log("Montagem concluída com sucesso.");
-        return true; // Montagem bem-sucedida
-    }
-}
-
-// Função auxiliar para processar instruções
-function processInstruction(instructionLine, address, lineNumber, firstPass, labels = {}, unresolvedJumps = [], errorMessages = []) {
-    let tokens = instructionLine.split(/[\s,]+/);
-    let instruction = tokens[0];
-    let operands = tokens.slice(1);
-
-    // Mapeia a instrução para o opcode numérico
-    const opcodeMap = {
-        'LOAD': OPCODE_LOAD,
-        'ADD': OPCODE_ADD,
-        'SUB': OPCODE_SUB,
-        'STORE': OPCODE_STORE,
-        'JMP': OPCODE_JMP,
-        'JZ': OPCODE_JZ,
-        'IN': OPCODE_IN,
-        'OUT': OPCODE_OUT,
-        'INC': OPCODE_INC,
-        'DEC': OPCODE_DEC,
-    };
-
-    const opcode = opcodeMap[instruction];
-
-    if (opcode !== undefined) {
-        // Verifica se a instrução requer operandos e se eles estão presentes
-        const instructionsWithOperands = [OPCODE_LOAD, OPCODE_ADD, OPCODE_SUB, OPCODE_STORE, OPCODE_JMP, OPCODE_JZ, OPCODE_INC, OPCODE_DEC];
-        if (instructionsWithOperands.includes(opcode) && operands.length === 0) {
-            if (!firstPass) {
-                errorMessages.push(`Erro na linha ${lineNumber}: Operando ausente para a instrução "${instruction}".`);
-            }
-            return 0;
-        }
-
-        if (!firstPass) {
-            // Armazena o opcode numérico na memória
-            memory[address] = opcode;
-
-            // Tratamento de operandos
-            if (operands.length > 0) {
-                let operandValue = null;
-
-                // Verifica se o operando é um registrador, um número ou um label
-                let operand = operands[0];
-
-                // Operações com registradores
-                if (['A', 'B', 'C'].includes(operand)) {
-                    operandValue = REGISTER_CODES[operand]; // Armazenamos o código do registrador
-                } else {
-                    // Pode ser um valor imediato ou um label
-                    operandValue = parseInt(operand, 10);
-                    if (isNaN(operandValue)) {
-                        // Pode ser um label
-                        if (labels.hasOwnProperty(operand)) {
-                            operandValue = labels[operand];
-                        } else {
-                            // Adiciona à lista de saltos a resolver
-                            unresolvedJumps.push({
-                                address: address,
-                                operandLabel: operand,
-                                lineNumber: lineNumber
-                            });
-                            operandValue = 0; // Valor temporário
-                        }
-                    }
-                }
-
-                // Armazena o operando na próxima posição
-                memory[address + 1] = operandValue;
-            }
-        }
-        Estouro de Memória de Código durante a execução.
-        if (instruction.endsWith(':')) {
-            // Variável sem valor inicial
-            let varName = instruction.slice(0, -1);
-            if (firstPass) {
-                labels[varName] = dataAddress;
-                dataAddress++;
-
-                // Verifica se a memória de dados excede o limite
-                if (dataAddress >= memory.length) {
-                    hasError = true;
-                    errorMessages.push("Erro: Estouro de Memória de Dados. Não há espaço suficiente para armazenar os dados.");
-                }
-            }
-            return 0;
-        } else if (!isNaN(parseInt(operands[0], 10))) {
-            // Variável com valor inicial
-            let varName = instruction;
-            if (firstPass) {
-                labels[varName] = dataAddress;
-                dataAddress++;
-
-                // Verifica se a memória de dados excede o limite
-                if (dataAddress >= memory.length) {
-                    hasError = true;
-                    errorMessages.push("Erro: Estouro de Memória de Dados. Não há espaço suficiente para armazenar os dados.");
-                }
-            } else {
-                let value = parseInt(operands[0], 10);
-                memory[labels[varName]] = value;
-            }
-            return 0;
-        } else {
-            if (!firstPass) {
-                errorMessages.push(`Erro na montagem na linha ${lineNumber}: Instrução ou declaração inválida "${instructionLine}".`);
-            }
-            return 0;
-        }
-    }
+    log('Programa carregado na memória.');
 }
 
 // Função para executar o programa carregado na memória
-function executeProgram() {
+export function executeProgram() {
     IP = 0; // Reseta o Instruction Pointer
     while (IP < CODE_MEMORY_LIMIT && memory[IP] !== 0) {
         const opcode = memory[IP];
@@ -321,31 +83,40 @@ function executeProgram() {
 
         executeOpcode(opcode, operand);
 
-        // Ajusta o IP com base na instrução
-        if ([OPCODE_LOAD, OPCODE_ADD, OPCODE_SUB, OPCODE_STORE, OPCODE_INC, OPCODE_DEC].includes(opcode)) {
-            IP += 2;
-        } else if (opcode === OPCODE_JMP || opcode === OPCODE_JZ) {
-            // O IP já foi ajustado dentro da instrução
-        } else if (opcode === OPCODE_IN || opcode === OPCODE_OUT) {
-            IP += 1;
-        } else {
-            IP += 1;
-        }
+        // Checagem de interrupções após cada instrução
+        checkInterrupts();
 
         // Verifica se o IP excedeu o limite de memória de código
         if (IP >= CODE_MEMORY_LIMIT) {
-            console.error("Erro: Estouro de Memória de Código durante a execução.");
+            log('Erro: Estouro de Memória de Código durante a execução.');
             break;
         }
-
-        // Checagem de interrupções após cada instrução
-        // As interrupções serão tratadas no interface.js
     }
-    console.log("Execução completa.");
+    log('Execução completa.');
+}
+
+// Função para executar a próxima instrução (para modo passo a passo)
+export function executeNextInstruction() {
+    const opcode = memory[IP];
+    const operand = memory[IP + 1];
+
+    if (opcode !== undefined) {
+        executeOpcode(opcode, operand);
+
+        // Checagem de interrupções
+        checkInterrupts();
+
+        // Verifica se o IP excedeu o limite de memória de código
+        if (IP >= CODE_MEMORY_LIMIT) {
+            log('Erro: Estouro de Memória de Código durante a execução.');
+        }
+    } else {
+        log(`Erro na execução: Opcode desconhecido no endereço ${IP}.`);
+    }
 }
 
 // Função para executar a instrução baseada no opcode
-function executeOpcode(opcode, operand) {
+export function executeOpcode(opcode, operand) {
     let operandValue;
 
     // Tratamento dos operandos registradores
@@ -364,101 +135,104 @@ function executeOpcode(opcode, operand) {
     }
 
     switch (opcode) {
-        case OPCODE_LOAD:
+        case OPCODES.LOAD:
             A = operandValue;
-            console.log(`LOAD: A = ${A}`);
+            log(`LOAD: A = ${A}`);
+            IP += 2;
             break;
 
-        case OPCODE_ADD:
+        case OPCODES.ADD:
             A += operandValue;
-            console.log(`ADD: A = ${A}`);
+            log(`ADD: A = ${A}`);
+            IP += 2;
             break;
 
-        case OPCODE_SUB:
+        case OPCODES.SUB:
             A -= operandValue;
-            console.log(`SUB: A = ${A}`);
+            log(`SUB: A = ${A}`);
+            IP += 2;
             break;
 
-        case OPCODE_STORE:
-            if (operand === REGISTER_CODES['A'] || operand === REGISTER_CODES['B'] || operand === REGISTER_CODES['C']) {
-                if (operand === REGISTER_CODES['A']) {
-                    setRegisterValue('A', A);
-                } else if (operand === REGISTER_CODES['B']) {
-                    setRegisterValue('B', A);
-                } else if (operand === REGISTER_CODES['C']) {
-                    setRegisterValue('C', A);
-                }
+        case OPCODES.STORE:
+            if ([REGISTER_CODES['A'], REGISTER_CODES['B'], REGISTER_CODES['C']].includes(operand)) {
+                setRegisterValue(getRegisterNameByCode(operand), A);
+            } else if (operand >= 0 && operand < memory.length) {
+                memory[operand] = A;
             } else {
-                // Armazena em memória
-                if (operand >= 0 && operand < memory.length) {
-                    memory[operand] = A;
-                } else {
-                    console.error(`Erro: Endereço inválido ${operand} na instrução STORE.`);
-                    IP = memory.length; // Termina a execução
-                }
+                log(`Erro: Endereço inválido ${operand} na instrução STORE.`);
+                IP = memory.length; // Termina a execução
             }
-            console.log(`STORE: A armazenado em ${operand}`);
+            log(`STORE: A armazenado em ${operand}`);
+            IP += 2;
             break;
 
-        case OPCODE_JMP:
+        case OPCODES.JMP:
             if (operand !== null) {
                 IP = operand;
-                console.log(`JMP para: ${IP}`);
+                log(`JMP para: ${IP}`);
+            } else {
+                IP += 2;
             }
             break;
 
-        case OPCODE_JZ:
+        case OPCODES.JZ:
             if (A === 0 && operand !== null) {
                 IP = operand;
-                console.log(`JZ para: ${IP}`);
+                log(`JZ para: ${IP}`);
             } else {
-                IP += 2; // Avança para a próxima instrução se A não for zero
+                IP += 2;
             }
             break;
 
-        case OPCODE_IN:
-            // A função de entrada será gerenciada pelo interface.js
+        case OPCODES.IN:
             A = dataBus;
-            console.log(`IN: A = ${A}`);
+            log(`IN: A = ${A}`);
+            IP += 1;
             break;
 
-        case OPCODE_OUT:
-            // Modificação para implementar IRQ2
+        case OPCODES.OUT:
             dataBus = A;
-            window.IRQ2 = true; // Sinaliza a interrupção IRQ2
-            console.log(`OUT: A = ${A}`);
+            IRQ2 = true; // Sinaliza a interrupção IRQ2
+            log(`OUT: A = ${A}`);
+            IP += 1;
             break;
 
-        case OPCODE_INC:
-            if (operand === REGISTER_CODES['A'] || operand === REGISTER_CODES['B'] || operand === REGISTER_CODES['C']) {
-                let regName = operand === REGISTER_CODES['A'] ? 'A' : operand === REGISTER_CODES['B'] ? 'B' : 'C';
+        case OPCODES.INC:
+            if ([REGISTER_CODES['A'], REGISTER_CODES['B'], REGISTER_CODES['C']].includes(operand)) {
+                let regName = getRegisterNameByCode(operand);
                 let value = getRegisterValue(regName);
                 setRegisterValue(regName, value + 1);
-                console.log(`INC: ${regName} = ${value + 1}`);
+                log(`INC: ${regName} = ${value + 1}`);
             } else {
-                console.error(`Erro: Operando inválido para INC: ${operand}`);
+                log(`Erro: Operando inválido para INC: ${operand}`);
             }
+            IP += 2;
             break;
 
-        case OPCODE_DEC:
-            if (operand === REGISTER_CODES['A'] || operand === REGISTER_CODES['B'] || operand === REGISTER_CODES['C']) {
-                let regName = operand === REGISTER_CODES['A'] ? 'A' : operand === REGISTER_CODES['B'] ? 'B' : 'C';
+        case OPCODES.DEC:
+            if ([REGISTER_CODES['A'], REGISTER_CODES['B'], REGISTER_CODES['C']].includes(operand)) {
+                let regName = getRegisterNameByCode(operand);
                 let value = getRegisterValue(regName);
                 setRegisterValue(regName, value - 1);
-                console.log(`DEC: ${regName} = ${value - 1}`);
+                log(`DEC: ${regName} = ${value - 1}`);
             } else {
-                console.error(`Erro: Operando inválido para DEC: ${operand}`);
+                log(`Erro: Operando inválido para DEC: ${operand}`);
             }
+            IP += 2;
             break;
 
         default:
-            console.error(`Erro na execução: Opcode desconhecido ${opcode}`);
+            log(`Erro na execução: Opcode desconhecido ${opcode}`);
+            IP += 1;
             break;
     }
+
+    // Atualiza o opcode atual para a interface
+    currentOpcode = opcode;
 }
 
 // Funções auxiliares para acessar registradores
-function getRegisterValue(register) {
+export function getRegisterValue(register) {
     switch (register) {
         case 'A':
             return A;
@@ -467,12 +241,12 @@ function getRegisterValue(register) {
         case 'C':
             return C;
         default:
-            console.error(`Registrador desconhecido: ${register}`);
+            log(`Registrador desconhecido: ${register}`);
             return 0;
     }
 }
 
-function setRegisterValue(register, value) {
+export function setRegisterValue(register, value) {
     switch (register) {
         case 'A':
             A = value;
@@ -484,36 +258,115 @@ function setRegisterValue(register, value) {
             C = value;
             break;
         default:
-            console.error(`Registrador desconhecido: ${register}`);
+            log(`Registrador desconhecido: ${register}`);
             break;
     }
 }
 
-// Expondo as funções e variáveis necessárias para o interface.js
-window.memory = memory;
-window.A = A;
-window.B = B;
-window.C = C;
-window.IP = IP;
-window.dataBus = dataBus;
-window.controlBus = controlBus;
-window.CODE_MEMORY_LIMIT = CODE_MEMORY_LIMIT;
-window.DATA_MEMORY_START = DATA_MEMORY_START;
+function getRegisterNameByCode(code) {
+    for (const [key, value] of Object.entries(REGISTER_CODES)) {
+        if (value === code) {
+            return key;
+        }
+    }
+    return null;
+}
 
-window.assembleAndLoad = assembleAndLoad;
-window.executeProgram = executeProgram;
-window.executeOpcode = executeOpcode; // Exporta a função executeOpcode
+// Getter e Setter para IP
+export function getIP() {
+    return IP;
+}
 
-// Expondo os OpCodes para interface.js
-window.OPCODES = {
-    LOAD: OPCODE_LOAD,
-    ADD: OPCODE_ADD,
-    SUB: OPCODE_SUB,
-    STORE: OPCODE_STORE,
-    JMP: OPCODE_JMP,
-    JZ: OPCODE_JZ,
-    IN: OPCODE_IN,
-    OUT: OPCODE_OUT,
-    INC: OPCODE_INC,
-    DEC: OPCODE_DEC
-};
+export function setIP(value) {
+    IP = value;
+}
+
+// Getter e Setter para dataBus
+export function getDataBus() {
+    return dataBus;
+}
+
+export function setDataBus(value) {
+    dataBus = value;
+}
+
+// Getter e Setter para controlBus
+export function getControlBus() {
+    return { ...controlBus }; // Retorna uma cópia para evitar manipulação direta
+}
+
+export function setControlBus(newControlBus) {
+    controlBus.read = newControlBus.read;
+    controlBus.write = newControlBus.write;
+    controlBus.io = newControlBus.io;
+}
+
+// Getter e Setter para IRQ1
+export function getIRQ1() {
+    return IRQ1;
+}
+
+export function setIRQ1(value) {
+    IRQ1 = value;
+}
+
+// Getter e Setter para IRQ2
+export function getIRQ2() {
+    return IRQ2;
+}
+
+export function setIRQ2(value) {
+    IRQ2 = value;
+}
+
+// Getter para currentOpcode
+export function getCurrentOpcode() {
+    return currentOpcode;
+}
+
+// Função para checar e tratar interrupções
+export function checkInterrupts() {
+    if (IRQ1) {
+        handleIRQ1();
+        IRQ1 = false;
+    }
+    if (IRQ2) {
+        handleIRQ2();
+        IRQ2 = false;
+    }
+}
+
+// Função para tratar a interrupção IRQ1 (teclado)
+function handleIRQ1() {
+    log('IRQ1: Interrupção do teclado tratada. Valor disponível no dataBus.');
+    // Aqui você pode implementar alguma lógica se necessário
+}
+
+// Função para tratar a interrupção IRQ2 (display)
+function handleIRQ2() {
+    log('IRQ2: Interrupção do display tratada. Display atualizado com o valor do dataBus.');
+    if (updateDisplayCallback) {
+        updateDisplayCallback(dataBus);
+    }
+}
+
+// Função para resetar o simulador
+export function resetSimulator() {
+    // Limpa a memória e registradores
+    memory.fill(0);
+    A = 0;
+    B = 0;
+    C = 0;
+    IP = 0;
+    dataBus = 0;
+    controlBus.read = false;
+    controlBus.write = false;
+    controlBus.io = false;
+    IRQ1 = false;
+    IRQ2 = false;
+    currentOpcode = null;
+    log('Simulador resetado.');
+}
+
+// Expondo o objeto OPCODES para uso no pc101-gui.js
+export { OPCODES };
